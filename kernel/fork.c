@@ -98,8 +98,8 @@
 #include <linux/scs.h>
 #include <linux/io_uring.h>
 #include <linux/cpufreq_times.h>
+#include <linux/simple_lmk.h>
 #include <linux/task_integrity.h>
-
 #include <asm/pgalloc.h>
 #include <linux/uaccess.h>
 #include <asm/mmu_context.h>
@@ -1166,7 +1166,6 @@ static inline void __mmput(struct mm_struct *mm)
 	}
 	if (mm->binfmt)
 		module_put(mm->binfmt->module);
-	lru_gen_del_mm(mm);
 	mmdrop(mm);
 }
 
