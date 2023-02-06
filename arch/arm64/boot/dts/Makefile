@@ -103,7 +103,7 @@ dtb-y += allwinner/sun50i-a64-pinephone-1.1.dtb
 
 targets += dtbs
 DTB_LIST  := $(dtb-y) $(dtbo-y)
-always    := $(DTB_LIST)
+always-y  := $(DTB_LIST)
 
 dtbs: $(addprefix $(obj)/, $(DTB_LIST))
 
