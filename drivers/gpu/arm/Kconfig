@@ -33,6 +33,9 @@ config MALI_BIFROST_R38P1
         depends on MALI_DDK_VERSION
         bool "Bifrost r38p1 driver"
 
+config MALI_DDK_VALHALL_R44P0
+	bool "Valhall r44p0 driver"
+
 config MALI_BIFROST_R49P1
         depends on MALI_DDK_VERSION
         bool "Bifrost r49p1 driver"
@@ -41,10 +44,6 @@ endchoice
 
 if MALI_BIFROST_R38P1
 source "drivers/gpu/arm/b_r38p1/Kconfig"
-endif
-
-if MALI_BIFROST_R49P1
-source "drivers/gpu/arm/b_r49p1/Kconfig"
 endif
 
 endmenu
