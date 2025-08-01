@@ -35,29 +35,34 @@ static bool enabled __read_mostly;
  * If a memory region is not accessed for this or longer time, DAMON_RECLAIM
  * identifies the region as cold, and reclaims.  120 seconds by default.
  */
-static unsigned long min_age __read_mostly = 60000000;
+static unsigned long min_age __read_mostly = 120000000;
 module_param(min_age, ulong, 0600);
 
-static struct damos_quota damon_reclaim_quota = {
-	/* reclaim up to 512 MiB per 1 sec by default */
-	.ms = 0,
-	.sz = 256 * 1024 * 1024,
-	.reset_interval = 1000,
-	/* Within the quota, page out older regions first. */
-	.weight_sz = 0,
-	.weight_nr_accesses = 0,
-	.weight_age = 1
-};
-DEFINE_DAMON_MODULES_DAMOS_QUOTAS(damon_reclaim_quota);
+/*
+ * Limit of time for trying the reclamation in milliseconds.
+ *
+ * DAMON_RECLAIM tries to use only up to this time within a time window
+ * (quota_reset_interval_ms) for trying reclamation of cold pages.  This can be
+ * used for limiting CPU consumption of DAMON_RECLAIM.  If the value is zero,
+ * the limit is disabled.
+ *
+ * 10 ms by default.
+ */
+static unsigned long quota_ms __read_mostly = 10;
+module_param(quota_ms, ulong, 0600);
 
-static struct damos_watermarks damon_reclaim_wmarks = {
-	.metric = DAMOS_WMARK_FREE_MEM_RATE,
-	.interval = 20000000,	/* 20 seconds */
-	.high = 500,		/* 50 percent */
-	.mid = 300,		/* 30 percent */
-	.low = 200,		/* 20 percent */
-};
-DEFINE_DAMON_MODULES_WMARKS_PARAMS(damon_reclaim_wmarks);
+/*
+ * Limit of size of memory for the reclamation in bytes.
+ *
+ * DAMON_RECLAIM charges amount of memory which it tried to reclaim within a
+ * time window (quota_reset_interval_ms) and makes no more than this limit is
+ * tried.  This can be used for limiting consumption of CPU and IO.  If this
+ * value is zero, the limit is disabled.
+ *
+ * 128 MiB by default.
+ */
+static unsigned long quota_sz __read_mostly = 128 * 1024 * 1024;
+module_param(quota_sz, ulong, 0600);
 
 /*
  * The time/size quota charge reset interval in milliseconds.
