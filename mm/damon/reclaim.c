@@ -35,7 +35,7 @@ static bool enabled __read_mostly;
  * If a memory region is not accessed for this or longer time, DAMON_RECLAIM
  * identifies the region as cold, and reclaims.  120 seconds by default.
  */
-static unsigned long min_age __read_mostly = 120000000;
+static unsigned long min_age __read_mostly = 60000000;
 module_param(min_age, ulong, 0600);
 
 /*
