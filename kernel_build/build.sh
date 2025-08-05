@@ -1,6 +1,6 @@
 #!/bin/bash
 
-XY_VERSION="R2.5-P"
+KERNEL_NAME="素晴らしい！！"
 
 set -e
 
@@ -17,7 +17,6 @@ fi
 
 export PATH="$(pwd)/kernel_build/bin:$PATH"
 
-# Configs
 OUTDIR="$(pwd)/out"
 MODULES_OUTDIR="$(pwd)/modules_out"
 TMPDIR="$(pwd)/kernel_build/tmp"
@@ -33,19 +32,17 @@ MODULES_DIR="$DLKM_RAMDISK_DIR/lib/modules"
 MKBOOTIMG="$(pwd)/kernel_build/mkbootimg/mkbootimg.py"
 MKDTBOIMG="$(pwd)/kernel_build/dtb/mkdtboimg.py"
 
-OUT_KERNELZIP="$(pwd)/kernel_build/ExynosUnbound-${XY_VERSION}_a14.zip"
-OUT_KERNELTAR="$(pwd)/kernel_build/ExynosUnbound-${XY_VERSION}_a14.tar"
+OUT_KERNELZIP="$(pwd)/kernel_build/${KERNEL_NAME}.zip"
+OUT_KERNELTAR="$(pwd)/kernel_build/${KERNEL_NAME}.tar"
 OUT_KERNEL="$OUTDIR/arch/arm64/boot/Image"
 OUT_BOOTIMG="$(pwd)/kernel_build/zip/boot.img"
 OUT_VENDORBOOTIMG="$(pwd)/kernel_build/zip/vendor_boot.img"
 OUT_DTBIMAGE="$TMPDIR/dtb.img"
 
-# Kernel-side
-BUILD_ARGS="LOCALVERSION=-XyUnbound-${XY_VERSION} KBUILD_BUILD_USER=Gabriel260BR KBUILD_BUILD_HOST=ExynosUnbound"
+BUILD_ARGS="LOCALVERSION=-${KERNEL_NAME} KBUILD_BUILD_USER=alipmikudayooo KBUILD_BUILD_HOST=${KERNEL_NAME}"
 
 kfinish() {
     rm -rf "$TMPDIR"
-#    rm -rf "$OUTDIR"
     rm -rf "$MODULES_OUTDIR"
 }
 
@@ -101,13 +98,13 @@ for module in $(cat "$IN_DLKM/modules.load"); do
     if [ -f "$i" ]; then
         cp -f "$i" "$MODULES_DIR/0.0/$module"
     else
-	missing_modules="$missing_modules $module"
+        missing_modules="$missing_modules $module"
     fi
 done
 
 if [ "$missing_modules" != "" ]; then
-        echo "ERROR: the following modules were not found: $missing_modules"
-	exit 1
+    echo "ERROR: the following modules were not found: $missing_modules"
+    exit 1
 fi
 
 depmod 0.0 -b "$DLKM_RAMDISK_DIR"
@@ -128,7 +125,6 @@ echo "Building dtb image..."
 python2 "$MKDTBOIMG" create "$OUT_DTBIMAGE" --custom0=0x00000000 --custom1=0xff000000 --version=0 --page_size=2048 "$IN_DTB" || exit 1
 
 echo "Building boot image..."
-
 $MKBOOTIMG --header_version 4 \
     --kernel "$OUT_KERNEL" \
     --output "$OUT_BOOTIMG" \
@@ -177,9 +173,4 @@ lz4 -c -12 -B6 --content-size "$OUT_BOOTIMG" > boot.img.lz4
 lz4 -c -12 -B6 --content-size "$OUT_VENDORBOOTIMG" > vendor_boot.img.lz4
 tar -cf "$OUT_KERNELTAR" boot.img.lz4 vendor_boot.img.lz4
 rm -f boot.img.lz4 vendor_boot.img.lz4
-cd "$DIR"
 echo "Done! Output: $OUT_KERNELTAR"
-
-echo "Cleaning..."
-rm -f "${OUT_VENDORBOOTIMG}" "${OUT_BOOTIMG}"
-kfinish

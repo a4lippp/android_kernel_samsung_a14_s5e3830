@@ -10,17 +10,38 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+
+    - name: Setup KernelSU (submodule)
+      run: |
+        git submodule update --init
+
+    - name: Cache ccache
+      uses: actions/cache@v3
+      with:
+        path: ~/.ccache
+        key: ${{ runner.os }}-ccache-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-ccache-
+
     - name: Install tools
       run: |
-        sudo apt-get update -y &>/dev/null || sudo apt-get update -y &>/dev/null || true
-        sudo apt-get upgrade -y &>/dev/null || sudo apt-get upgrade -y &>/dev/null || true
-        sudo apt-get install brotli zip zstd tar lz4 cpio xz-utils pahole libelf-dev python2 -y || sudo apt-get install python2 pahole libelf-dev brotli zip zstd tar lz4 cpio xz-utils -y
+        sudo apt-get update -y &>/dev/null || true
+        sudo apt-get install brotli zip zstd tar lz4 cpio xz-utils pahole libelf-dev python2 ccache -y
+
     - name: Build
       run: |
-        curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
-        bash build.sh
-    - name: Upload
+        curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -
+        export CCACHE_EXEC=$(which ccache)
+        export USE_CCACHE=1
+        export CC="ccache clang"
+        export LLVM=1
+        export CCACHE_DIR=$HOME/.ccache
+        bash build.sh .
+
+    - name: Upload kernel (ZIP & TAR)
       uses: actions/upload-artifact@v4
       with:
-        name: Kernels_a14
-        path: kernel_build/ExynosUnbound*
+        name: kernel_results
+        path: |
+          kernel_build/alipmikudayooo.zip
+          kernel_build/alipmikudayooo.tar
