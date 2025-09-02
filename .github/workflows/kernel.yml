@@ -43,5 +43,5 @@ jobs:
       with:
         name: kernel_results
         path: |
-          kernel_build/素晴らしい！！.zip
-          kernel_build/素晴らしい！！.tar
+          kernel_build/ワンダホイ核.zip
+          kernel_build/ワンダホイ核.tar

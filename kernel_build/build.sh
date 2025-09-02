@@ -1,6 +1,6 @@
 #!/bin/bash
 
-KERNEL_NAME="素晴らしい！！"
+KERNEL_NAME="ワンダホイ核"
 
 set -e
 
