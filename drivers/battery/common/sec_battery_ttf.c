@@ -106,16 +106,19 @@ int sec_get_ttf_standard_curr(struct sec_battery_info *battery)
 	if (is_hv_wire_12v_type(battery->cable_type)) {
 		charge = battery->ttf_d->ttf_hv_12v_charge_current;
 #if IS_ENABLED(CONFIG_WIRELESS_CHARGING)
-	} else if (battery->cable_type == SEC_BATTERY_CABLE_WIRELESS_EPP ||
-		battery->cable_type == SEC_BATTERY_CABLE_WIRELESS_EPP_FAKE) {
-		if (battery->wc20_rx_power >= WFC21_WIRELESS_POWER) // need to fix hardcoding
-			charge = battery->ttf_d->ttf_wc21_wireless_charge_current;
-		else if (battery->wc20_rx_power >= WFC20_WIRELESS_POWER)
-			charge = battery->ttf_d->ttf_wc20_wireless_charge_current;
-		else if (battery->wc20_rx_power >= WFC10_WIRELESS_POWER)
-			charge = battery->ttf_d->ttf_hv_wireless_charge_current;
-		else
-			charge = battery->ttf_d->ttf_wireless_charge_current;
+	} else if (battery->cable_type == SEC_BATTERY_CABLE_WIRELESS_MPP) {
+		union power_supply_propval value = {0, };
+
+		if (sec_bat_hv_wc_normal_mode_check(battery)) {
+			charge = battery->ttf_d->currents.wireless;
+		} else {
+			psy_do_property(battery->pdata->wireless_charger_name, get,
+				POWER_SUPPLY_EXT_PROP_NEGO_DONE_PWR, value);
+			charge = check_epp_mpp_current(battery->ttf_d->currents,
+					(value.intval > battery->wc20_rx_power ? value.intval : battery->wc20_rx_power));
+		}
+	} else if (is_epp_wireless_type(battery->cable_type)) {
+		charge = check_epp_mpp_current(battery->ttf_d->currents, battery->wc20_rx_power);
 	} else if (is_hv_wireless_type(battery->cable_type) ||
 		battery->cable_type == SEC_BATTERY_CABLE_PREPARE_WIRELESS_HV ||
 		battery->cable_type == SEC_BATTERY_CABLE_PREPARE_WIRELESS_20) {
