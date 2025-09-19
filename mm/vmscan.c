@@ -6693,6 +6693,7 @@ restart:
 		bool ret;
 
 		simple_lmk_decide_reclaim(sc.priority);
+		int classzone_idx = sc.reclaim_idx;
 		sc.reclaim_idx = classzone_idx;
 
 		/*
@@ -6887,6 +6888,7 @@ static void kswapd_try_to_sleep(pg_data_t *pgdat, int alloc_order, int reclaim_o
 	 * eligible zone balanced that it's also unlikely that compaction will
 	 * succeed.
 	 */
+	int classzone_idx = sc.reclaim_idx;
 	if (prepare_kswapd_sleep(pgdat, reclaim_order, classzone_idx)) {
 		simple_lmk_stop_reclaim();
 		/*
@@ -6927,6 +6929,7 @@ static void kswapd_try_to_sleep(pg_data_t *pgdat, int alloc_order, int reclaim_o
 	 * After a short sleep, check if it was a premature sleep. If not, then
 	 * go fully to sleep until explicitly woken up.
 	 */
+	int classzone_idx = sc.reclaim_idx;
 	if (!remaining &&
 	    prepare_kswapd_sleep(pgdat, reclaim_order, classzone_idx)) {
 		simple_lmk_stop_reclaim();
